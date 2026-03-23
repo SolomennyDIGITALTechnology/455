@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ТТХ миномётов и АГС</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1e2a3a;
+        }
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .filter-group label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        select, input, button {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .share-btn {
+            background-color: #27ae60;
+        }
+        .share-btn:hover {
+            background-color: #2ecc71;
+        }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+        .card-header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header:hover {
+            background: #1e2a3a;
+        }
+        .card-header-title h2 {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        .type-badge {
+            display: inline-block;
+            background: #e67e22;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .toggle-icon {
+            font-size: 1.4rem;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 15px;
+        }
+        .card.open .card-body {
+            max-height: 2000px;
+            padding: 15px;
+        }
+        .card.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+        .card-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #ecf0f1;
+            object-fit: cover;
+        }
+        .spec-list {
+            list-style: none;
+        }
+        .spec-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 0.9rem;
+        }
+        .spec-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .spec-value {
+            color: #555;
+            text-align: right;
+        }
+        .card-footer {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            text-align: center;
+            border-top: 1px solid #ecf0f1;
+        }
+        .card-footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .card-footer a:hover {
+            text-decoration: underline;
+        }
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            grid-column: 1 / -1;
+        }
+        @media (max-width: 700px) {
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .filter-group {
+                justify-content: space-between;
+            }
+            .cards-container {
+                grid-template-columns: 1fr;
+            }
+            .card-header-title h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Справочник: миномёты и автоматические гранатомёты</h1>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="typeFilter">Тип:</label>
+                <select id="typeFilter">
+                    <option value="all">Все</option>
+                    <option value="миномёт">Миномёты</option>
+                    <option value="АГС">АГС</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="searchInput">Поиск:</label>
+                <input type="text" id="searchInput" placeholder="Название или страна...">
+            </div>
+            <div class="filter-group">
+                <button id="shareBtn" class="share-btn">🔗 Поделиться</button>
+            </div>
+        </div>
+
+        <div id="cardsContainer" class="cards-container"></div>
+    </div>
+
+    <script>
+        // База данных с исправленными ТТХ (особенно для АГС-17)
+        const weaponsData = [
+            // 60-мм миномёты
+            { id:1, name:"M224", type:"миномёт", caliber:"60 мм", weight:"21 кг", range_min:"70 м", range_max:"3490 м", rate_of_fire:"20 выстр/мин", country:"США", crew:"3 чел.", ammunition:"осколочные, дымовые, осветительные", ammo_capacity:"носимый БК: 20–30 мин", elevation:"+45°…+85°", traverse:"360°", image:"https://upload.wikimedia.org/wikipedia/commons/7/7b/M224_60mm_mortar.jpg", source:"https://en.wikipedia.org/wiki/M224_mortar" },
+            { id:2, name:"2Б24", type:"миномёт", caliber:"60 мм", weight:"22 кг", range_min:"100 м", range_max:"3000 м", rate_of_fire:"15 выстр/мин", country:"Россия", crew:"3 чел.", ammunition:"осколочные, дымовые, учебные", ammo_capacity:"носимый БК: 24 мины", elevation:"+45°…+85°", traverse:"±15°", image:"", source:"https://ru.wikipedia.org/wiki/2Б24" },
+            { id:3, name:"M6 (Commando)", type:"миномёт", caliber:"60 мм", weight:"18 кг", range_min:"100 м", range_max:"1800 м", rate_of_fire:"15 выстр/мин", country:"США", crew:"2 чел.", ammunition:"осколочные, дымовые", ammo_capacity:"носимый БК: 20 мин", elevation:"+45°…+85°", traverse:"360°", image:"", source:"https://en.wikipedia.org/wiki/M6_mortar" },
+            // 81-82 мм
+            { id:4, name:"L16A2", type:"миномёт", caliber:"81 мм", weight:"38 кг", range_min:"200 м", range_max:"5600 м", rate_of_fire:"15 выстр/мин", country:"Великобритания", crew:"3 чел.", ammunition:"осколочно-фугасные, дымовые, осветительные", ammo_capacity:"носимый БК: 24 мины", elevation:"+45°…+85°", traverse:"360°", image:"https://upload.wikimedia.org/wikipedia/commons/a/a0/L16_81mm_Mortar.jpg", source:"https://en.wikipedia.org/wiki/L16_81mm_mortar" },
+            { id:5, name:"2Б14 'Поднос'", type:"миномёт", caliber:"82 мм", weight:"42 кг", range_min:"100 м", range_max:"4270 м", rate_of_fire:"24 выстр/мин", country:"СССР", crew:"4 чел.", ammunition:"осколочно-фугасные, дымовые, зажигательные", ammo_capacity:"носимый БК: 32 мины", elevation:"+45°…+85°", traverse:"±15°", image:"https://upload.wikimedia.org/wikipedia/commons/7/73/2B14_Podnos.jpg", source:"https://ru.wikipedia.org/wiki/2Б14" },
+            { id:6, name:"2Б25 'Галл'", type:"миномёт", caliber:"82 мм", weight:"52 кг", range_min:"150 м", range_max:"6000 м", rate_of_fire:"15 выстр/мин", country:"Россия", crew:"4 чел.", ammunition:"осколочно-фугасные, корректируемые", ammo_capacity:"носимый БК: 30 мин", elevation:"+45°…+85°", traverse:"±15°", image:"", source:"https://ru.wikipedia.org/wiki/2Б25" },
+            { id:7, name:"M252", type:"миномёт", caliber:"81 мм", weight:"41 кг", range_min:"200 м", range_max:"5935 м", rate_of_fire:"16 выстр/мин", country:"США", crew:"3 чел.", ammunition:"осколочно-фугасные, дымовые, осветительные", ammo_capacity:"носимый БК: 24 мины", elevation:"+45°…+85°", traverse:"360°", image:"https://upload.wikimedia.org/wikipedia/commons/e/ec/M252_81mm_mortar.jpg", source:"https://en.wikipedia.org/wiki/M252_mortar" },
+            { id:8, name:"Brandt MO-81", type:"миномёт", caliber:"81 мм", weight:"44 кг", range_min:"200 м", range_max:"5200 м", rate_of_fire:"20 выстр/мин", country:"Франция", crew:"3 чел.", ammunition:"осколочно-фугасные, дымовые, осветительные", ammo_capacity:"носимый БК: 30 мин", elevation:"+45°…+85°", traverse:"±15°", image:"", source:"https://en.wikipedia.org/wiki/Brandt_MO-81" },
+            { id:9, name:"2Б12", type:"миномёт", caliber:"82 мм", weight:"45 кг", range_min:"100 м", range_max:"4200 м", rate_of_fire:"20 выстр/мин", country:"СССР", crew:"4 чел.", ammunition:"осколочно-фугасные, дымовые", ammo_capacity:"носимый БК: 36 мин", elevation:"+45°…+85°", traverse:"±15°", image:"", source:"https://ru.wikipedia.org/wiki/2Б12" },
+            { id:10, name:"M29", type:"миномёт", caliber:"81 мм", weight:"36 кг", range_min:"200 м", range_max:"4800 м", rate_of_fire:"18 выстр/мин", country:"США", crew:"3 чел.", ammunition:"осколочно-фугасные, дымовые", ammo_capacity:"носимый БК: 24 мины", elevation:"+45°…+85°", traverse:"360°", image:"", source:"https://en.wikipedia.org/wiki/M29_mortar" },
+            // 120-мм
+            { id:11, name:"2Б11 'Сани'", type:"миномёт", caliber:"120 мм", weight:"210 кг", range_min:"480 м", range_max:"7100 м", rate_of_fire:"15 выстр/мин", country:"СССР/Россия", crew:"6 чел.", ammunition:"осколочно-фугасные, дымовые, зажигательные, активно-реактивные", ammo_capacity:"носимый БК: 48 мин", elevation:"+45°…+80°", traverse:"±15°", image:"https://upload.wikimedia.org/wikipedia/commons/0/0b/2B11_Sani.jpg", source:"https://ru.wikipedia.org/wiki/2Б11" },
+            { id:12, name:"2С12 'Сани'", type:"миномёт", caliber:"120 мм", weight:"210 кг (миномёт) + возимый лафет", range_min:"480 м", range_max:"7100 м", rate_of_fire:"15 выстр/мин", country:"Россия", crew:"5 чел.", ammunition:"осколочно-фугасные, дымовые, активно-реактивные", ammo_capacity:"возимый БК: 40 мин", elevation:"+45°…+80°", traverse:"±15°", image:"https://upload.wikimedia.org/wikipedia/commons/0/0b/2B11_Sani.jpg", source:"https://ru.wikipedia.org/wiki/2С12" },
+            { id:13, name:"M120", type:"миномёт", caliber:"120 мм", weight:"144 кг", range_min:"200 м", range_max:"7200 м", rate_of_fire:"16 выстр/мин", country:"США", crew:"4 чел.", ammunition:"осколочно-фугасные, дымовые, осветительные", ammo_capacity:"носимый БК: 24 мины", elevation:"+45°…+85°", traverse:"360°", image:"https://upload.wikimedia.org/wikipedia/commons/2/2f/M120_mortar.jpg", source:"https://en.wikipedia.org/wiki/M120_mortar" },
+            { id:14, name:"Soltam K6", type:"миномёт", caliber:"120 мм", weight:"144 кг", range_min:"200 м", range_max:"7200 м", rate_of_fire:"16 выстр/мин", country:"Израиль", crew:"4 чел.", ammunition:"осколочно-фугасные, дымовые, осветительные", ammo_capacity:"носимый БК: 30 мин", elevation:"+45°…+85°", traverse:"360°", image:"", source:"https://en.wikipedia.org/wiki/Soltam_K6" },
+            { id:15, name:"MO-120-RT (RT-61)", type:"миномёт", caliber:"120 мм", weight:"565 кг (в боевом)", range_min:"500 м", range_max:"8130 м", rate_of_fire:"15 выстр/мин", country:"Франция", crew:"4 чел.", ammunition:"осколочно-фугасные, дымовые, активно-реактивные", ammo_capacity:"носимый БК: 30 мин", elevation:"+45°…+85°", traverse:"360°", image:"https://upload.wikimedia.org/wikipedia/commons/3/3c/MO-120-RT_120mm_mortar.jpg", source:"https://en.wikipedia.org/wiki/MO-120-RT" },
+            { id:16, name:"2Б16 'Нона-К'", type:"миномёт", caliber:"120 мм", weight:"1200 кг (буксируемая)", range_min:"500 м", range_max:"8800 м", rate_of_fire:"10 выстр/мин", country:"Россия", crew:"4 чел.", ammunition:"осколочно-фугасные, кумулятивные, активно-реактивные", ammo_capacity:"возимый БК: 60 выстрелов", elevation:"–5°…+80°", traverse:"±30°", note:"нарезной миномёт-пушка", image:"https://upload.wikimedia.org/wikipedia/commons/1/1d/2B16_Nona-K_120mm_gun-mortar.jpg", source:"https://ru.wikipedia.org/wiki/2Б16" },
+            { id:17, name:"2Б23 'Нона-М1'", type:"миномёт", caliber:"120 мм", weight:"150 кг", range_min:"500 м", range_max:"8800 м", rate_of_fire:"10 выстр/мин", country:"Россия", crew:"4 чел.", ammunition:"осколочно-фугасные, кумулятивные", ammo_capacity:"носимый БК: 24 выстрела", elevation:"+45°…+85°", traverse:"±15°", note:"нарезной", image:"", source:"https://ru.wikipedia.org/wiki/2Б23" },
+            // 160-240 мм
+            { id:18, name:"M-160", type:"миномёт", caliber:"160 мм", weight:"1170 кг", range_min:"800 м", range_max:"8000 м", rate_of_fire:"3 выстр/мин", country:"СССР", crew:"5 чел.", ammunition:"осколочно-фугасные", ammo_capacity:"носимый БК: 10 мин", elevation:"+45°…+80°", traverse:"±10°", image:"https://upload.wikimedia.org/wikipedia/commons/7/7c/M-160_mortar.jpg", source:"https://ru.wikipedia.org/wiki/160-мм_миномёт_М-160" },
+            { id:19, name:"2С4 'Тюльпан'", type:"миномёт", caliber:"240 мм", weight:"30000 кг (самоходный)", range_min:"800 м", range_max:"9650 м", rate_of_fire:"1 выстр/мин", country:"СССР/Россия", crew:"6 чел.", ammunition:"осколочно-фугасные, ядерные, активно-реактивные", ammo_capacity:"20 выстрелов", elevation:"+50°…+80°", traverse:"±10°", note:"самоходный", image:"https://upload.wikimedia.org/wikipedia/commons/9/9a/2S4_Tyulpan_self-propelled_mortar.jpg", source:"https://ru.wikipedia.org/wiki/2С4" },
+            // АГС – с уточнёнными данными по АГС-17
+            { id:20, name:"АГС-17 'Пламя'", type:"АГС", caliber:"30 мм", weight:"31 кг (снаряжённый: тело 18 кг + станок, прицел, коробка с гранатами)", length:"840 мм", muzzle_velocity:"185 м/с", range_aim:"1730 м", range_min:"100 м", range_max:"2100 м (с выстрелом ГПД-30)", rate_of_fire:"50–100 (одиночными) / 350–400 (очередями)", country:"СССР/Россия", crew:"2-3 чел.", ammunition:"ВОГ-17, ВОГ-17М (осколочные)", ammo_capacity:"лента на 29 выстрелов, носимый БК: 87 выстр", elevation:"–5°…+70°", traverse:"±30°", image:"https://upload.wikimedia.org/wikipedia/commons/0/02/AGS-17_grenade_launcher.jpg", source:"https://ru.wikipedia.org/wiki/АГС-17" },
+            { id:21, name:"АГС-30", type:"АГС", caliber:"30 мм", weight:"29 кг (в боевом положении)", length:"1100 мм", muzzle_velocity:"185 м/с", range_min:"100 м", range_max:"2100 м", rate_of_fire:"400 выстр/мин (техническая)", country:"Россия", crew:"2 чел.", ammunition:"ВОГ-30, ВОГ-30М (осколочные)", ammo_capacity:"лента на 30 выстрелов, носимый БК: 90 выстр", elevation:"–5°…+70°", traverse:"±15°", image:"https://upload.wikimedia.org/wikipedia/commons/e/e5/AGS-30_grenade_launcher.jpg", source:"https://ru.wikipedia.org/wiki/АГС-30" },
+            { id:22, name:"Mk 19", type:"АГС", caliber:"40 мм", weight:"63 кг", length:"1095 мм", muzzle_velocity:"240 м/с", range_min:"100 м", range_max:"2200 м", rate_of_fire:"40-60 выстр/мин", country:"США", crew:"2-3 чел.", ammunition:"M430 (осколочно-фугасные), M383, M384", ammo_capacity:"лента на 32 выстрела, носимый БК: 96 выстр", elevation:"+10°…+50°", traverse:"±15°", image:"https://upload.wikimedia.org/wikipedia/commons/5/5e/Mk_19_grenade_launcher.jpg", source:"https://en.wikipedia.org/wiki/Mk_19_grenade_launcher" },
+            { id:23, name:"HK GMG", type:"АГС", caliber:"40 мм", weight:"43 кг (в боевом положении)", length:"1175 мм", muzzle_velocity:"240 м/с", range_min:"100 м", range_max:"2200 м", rate_of_fire:"340 выстр/мин", country:"Германия", crew:"2 чел.", ammunition:"осколочно-фугасные, дымовые, кумулятивные", ammo_capacity:"лента на 32 выстрела", elevation:"–10°…+70°", traverse:"±30°", image:"https://upload.wikimedia.org/wikipedia/commons/d/db/HK_GMG.jpg", source:"https://en.wikipedia.org/wiki/Heckler_%26_Koch_GMG" },
+            { id:24, name:"Vektor Y3 AGL", type:"АГС", caliber:"40 мм", weight:"30 кг (тело)", range_min:"100 м", range_max:"2200 м", rate_of_fire:"340 выстр/мин", country:"ЮАР", crew:"2 чел.", ammunition:"осколочно-фугасные", ammo_capacity:"лента на 32 выстрела", elevation:"–5°…+70°", traverse:"±45°", image:"", source:"https://en.wikipedia.org/wiki/Vektor_Y3_AGL" },
+            { id:25, name:"2Б9 'Василёк'", type:"миномёт/АГС", caliber:"82 мм", weight:"632 кг (в боевом)", range_min:"100 м", range_max:"4200 м", rate_of_fire:"120 выстр/мин (автоматический)", country:"СССР", crew:"4 чел.", ammunition:"осколочно-фугасные", ammo_capacity:"4 обоймы по 4 выстрела", elevation:"–1°…+85°", traverse:"±30°", note:"автоматический миномёт (гибрид)", image:"https://upload.wikimedia.org/wikipedia/commons/4/45/2B9_Vasilyok_mortar.jpg", source:"https://ru.wikipedia.org/wiki/2Б9" }
+        ];
+
+        function renderCards(filteredData) {
+            const container = document.getElementById('cardsContainer');
+            if (!filteredData.length) {
+                container.innerHTML = '<div class="no-results">Нет образцов, соответствующих фильтрам</div>';
+                return;
+            }
+            let html = '';
+            filteredData.forEach(weapon => {
+                // Дополнительные поля (если есть)
+                const lengthLine = weapon.length ? `<li><span class="spec-label">Длина:</span><span class="spec-value">${weapon.length}</span></li>` : '';
+                const muzzleVelocityLine = weapon.muzzle_velocity ? `<li><span class="spec-label">Нач. скорость:</span><span class="spec-value">${weapon.muzzle_velocity}</span></li>` : '';
+                const rangeAimLine = weapon.range_aim ? `<li><span class="spec-label">Приц. дальность:</span><span class="spec-value">${weapon.range_aim}</span></li>` : '';
+                const ammoLine = weapon.ammunition ? `<li><span class="spec-label">Боеприпасы:</span><span class="spec-value">${weapon.ammunition}</span></li>` : '';
+                const ammoCapLine = weapon.ammo_capacity ? `<li><span class="spec-label">Боекомплект:</span><span class="spec-value">${weapon.ammo_capacity}</span></li>` : '';
+                const elevationLine = weapon.elevation ? `<li><span class="spec-label">УВН:</span><span class="spec-value">${weapon.elevation}</span></li>` : '';
+                const traverseLine = weapon.traverse ? `<li><span class="spec-label">УГН:</span><span class="spec-value">${weapon.traverse}</span></li>` : '';
+                const noteLine = weapon.note ? `<li><span class="spec-label">Примечание:</span><span class="spec-value">${weapon.note}</span></li>` : '';
+                
+                const imageHtml = weapon.image 
+                    ? `<img class="card-image" src="${weapon.image}" alt="${weapon.name}" onerror="this.onerror=null; this.src='https://via.placeholder.com/400x200?text=Фото+недоступно'">`
+                    : `<div class="card-image" style="background:#ecf0f1; display:flex; align-items:center; justify-content:center; height:150px; color:#95a5a6;">Фото отсутствует</div>`;
+                
+                html += `
+                    <div class="card" id="card-${weapon.id}">
+                        <div class="card-header" onclick="toggleCard(${weapon.id})">
+                            <div class="card-header-title">
+                                <h2>${weapon.name}</h2>
+                                <span class="type-badge">${weapon.type === 'миномёт' ? 'Миномёт' : (weapon.type === 'АГС' ? 'АГС' : 'Гибрид')}</span>
+                            </div>
+                            <div class="toggle-icon">▼</div>
+                        </div>
+                        <div class="card-body">
+                            ${imageHtml}
+                            <ul class="spec-list">
+                                <li><span class="spec-label">Калибр:</span><span class="spec-value">${weapon.caliber}</span></li>
+                                <li><span class="spec-label">Масса:</span><span class="spec-value">${weapon.weight}</span></li>
+                                ${lengthLine}
+                                <li><span class="spec-label">Дальность мин/макс:</span><span class="spec-value">${weapon.range_min} / ${weapon.range_max}</span></li>
+                                ${rangeAimLine}
+                                ${muzzleVelocityLine}
+                                <li><span class="spec-label">Скорострельность:</span><span class="spec-value">${weapon.rate_of_fire}</span></li>
+                                <li><span class="spec-label">Страна:</span><span class="spec-value">${weapon.country}</span></li>
+                                <li><span class="spec-label">Расчёт:</span><span class="spec-value">${weapon.crew || 'н/д'}</span></li>
+                                ${ammoLine}
+                                ${ammoCapLine}
+                                ${elevationLine}
+                                ${traverseLine}
+                                ${noteLine}
+                            </ul>
+                        </div>
+                        <div class="card-footer">
+                            <a href="${weapon.source || '#'}" target="_blank" rel="noopener noreferrer">Источник данных</a>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        window.toggleCard = function(id) {
+            const card = document.getElementById(`card-${id}`);
+            if (card) card.classList.toggle('open');
+        };
+
+        function applyFilters() {
+            const type = document.getElementById('typeFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = weaponsData.filter(weapon => {
+                if (type !== 'all' && weapon.type !== type) return false;
+                if (searchTerm && !weapon.name.toLowerCase().includes(searchTerm) && !weapon.country.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+            renderCards(filtered);
+        }
+
+        function sharePage() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'ТТХ миномётов и АГС',
+                    text: 'Интерактивный справочник тактико-технических характеристик',
+                    url: url,
+                }).catch(err => console.log('Ошибка шеринга', err));
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Ссылка скопирована в буфер обмена! Теперь вы можете отправить её друзьям.');
+                }).catch(() => {
+                    alert('Не удалось скопировать ссылку. Вы можете вручную скопировать адрес страницы из адресной строки.');
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCards(weaponsData);
+            document.getElementById('typeFilter').addEventListener('change', applyFilters);
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('shareBtn').addEventListener('click', sharePage);
+        });
+    </script>
+</body>
+</html>
